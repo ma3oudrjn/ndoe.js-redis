@@ -32,6 +32,7 @@ app.get("/photos", async (req, res) => {
             "https://mongoosejs.com/docs/tutorials/query_casting.html"
         );
         await client.setEx('data', 3200, JSON.stringify(data));
+
         res.status(200).json(data);
     } catch (error) {
         console.error('Unexpected error:', error);
