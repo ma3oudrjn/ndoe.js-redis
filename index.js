@@ -23,15 +23,12 @@ app.listen(port, async () => {
 
 app.get("/photos", async (req, res) => {
     try {
-        const value = await client.get('data');
-        if (value) {
-            return res.json(JSON.parse(value));
-        }
-
-        const { data } = await axios.get(
-            "https://mongoosejs.com/docs/tutorials/query_casting.html"
-        );
-        await client.setEx('data', 3200, JSON.stringify(data));
+        const data = await checkCash('digikala', async () => {
+            const response = await axios.get(
+                "https://www.digikala.com/"
+            );
+            return response.data;
+        });
 
         res.status(200).json(data);
     } catch (error) {
@@ -39,3 +36,16 @@ app.get("/photos", async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+async function checkCash(key, fetchFunction) {
+    const data = await client.get(key);
+    if (data) {
+        console.log("exist");
+        return JSON.parse(data);
+    } else {
+        console.log("not exist");
+        const newData = await fetchFunction();
+        await client.setEx(key, 3200, JSON.stringify(newData));
+        return newData;
+    }
+}
